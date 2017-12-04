@@ -11,10 +11,13 @@ class PostsIndex extends Component {
   }
 
   renderPosts() {
+    // maps on each value of key 1 : {title:"dsada", category: "dasda...}, which is object
     return _.map(this.props.posts, (post) => {
       return (
         <li className="list-group" key={post.id}>
-          {post.title}
+          <Link to={`/posts/${post.id}`}>
+            {post.title}
+          </Link>
         </li>
       );
     });

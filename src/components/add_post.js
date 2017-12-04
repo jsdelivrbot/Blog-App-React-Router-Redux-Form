@@ -1,78 +1,84 @@
 import React, { Component } from 'react';
+import { Field, reduxForm } from 'redux-form';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { createPost} from '../actions/index';
+
 // import { formSubmit } from '../actions/index';
 
-export default class AddPost extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      title: '',
-      category: '',
-      content: ''
-    };
-    this.titleChange = this.titleChange.bind(this);
-    this.categoryChange = this.categoryChange.bind(this);
-    this.contentChange = this.contentChange.bind(this);
+class PostNew extends Component {
+  renderField(field) {
+    const { meta: { touched, error }} = field;
+    // const { meta: { touched, error }, name, label, input } = field;
+    const className = `form-group ${touched && error ? 'has-danger' : ''}`;
+
+    return (
+      <div className={className}>
+        <label htmlFor={field.name}>{field.label}</label>
+        <input
+          className="form-control"
+          type="text"
+          id={field.name}
+          // placeholder="Title of post"
+          {...field.input}
+        />
+        <span className="text-help">{touched ? error : ''}</span>
+      </div>
+    );
   }
 
-  titleChange(e) {
-    this.setState({
-      title: e.target.value
-    });
-  }
-  categoryChange(e) {
-    this.setState({
-      category: e.target.value
-    });
-  }
-  contentChange(e) {
-    this.setState({
-      content: e.target.value
-    });
+  onSubmit(values) {
+    this.props.createPost(values, this.props.history.push('/'));
   }
 
   render() {
+    const { handleSubmit } = this.props;
+
     return (
-      <form onSubmit = {this.props.formSubmit}>
-        <div className="form-group">
-          <label htmlFor="title">Title</label>
-          <input
-            onChange={this.titleChange}
-            type="text"
-            value={this.state.title}
-            className="form-control"
-            id="title"
-            placeholder="Title of post"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="category">Category</label>
-          <input
-            onChange={this.categoryChange}
-            type="text"
-            id="category"
-            value={this.state.category}
-            className="form-control"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="content" className="content">Content</label>
-          <textarea
-            onChange={this.contentChange}
-            name="content"
-            value={this.state.content}
-            className="form-control"
-            id="content"
-            cols="30"
-            rows="10"
-          >
-          </textarea>
-        </div>
+      <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
+        <Field
+          label="Title"
+          name="title"
+          component={this.renderField}
+        />
+        <Field
+          label="Category"
+          name="category"
+          component={this.renderField}
+        />
+        <Field
+          label="Content"
+          name="content"
+          component={this.renderField}
+        />
         <button type="submit" className="btn btn-success">Save</button>
-        <button type="reset" className="btn btn-danger">Cancel</button>
+        <Link to="/" className="btn btn-danger">Cancel</Link>
       </form>
     );
   }
 }
 
-// export default connect(null, { posts })(AddPost);
+function validate(values) {
+  const errors = {};
+
+  if (!values.title || values.title.length < 3) {
+    errors.title = 'Please enter title minimum 3 characters long';
+  }
+
+  if (!values.category || values.category.length < 3) {
+    errors.category = 'Please enter category minimum 3 characters long';
+  }
+
+  if (!values.content || values.content.length < 3) {
+    errors.content = 'Please enter content minimum 3 characters long';
+  }
+
+  return errors;
+}
+
+export default reduxForm({
+  validate,
+  form: 'PostNewForm'
+})(
+  connect(null, { createPost })(PostNew)
+);
